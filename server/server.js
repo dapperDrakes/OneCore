@@ -25,7 +25,8 @@ app.listen(process.env.PORT || 3000, function(){
   console.log('Server is running');
 });
 
-app.get('/', function(req, res) {
+
+app.get('*', function(req, res) {
   res.sendFile(path.join(rootPath + "/index.html"));
 });
 
@@ -67,14 +68,30 @@ app.post('/api/signin', function(req, res, next) {
   dbHelpers.signin(userSignin, res, next);
 });
 
-app.post('/api/script/remind', function(req, res) {
-  var number = req.body.number;
+app.post('/api/script/remind', function(req, res, next) {
+  console.log("request received at setReminder route");
+  var username = req.body.username;
   var message = req.body.message;
-  dbHelpers.sendReminder(number, message);
-});
+  //phone will not be a parameter in final version, we'll look it up based on the username
+  var phone = req.body.phone;
+  var time = req.body.time;
+  dbHelpers.setReminder(username, message, phone, time, next);
+})
 
 app.post('/api/symptomEntry/add', function(req, res) {
   var newSympson = req.body;
   console.log(newSympson);
   dbHelpers.addSymptom(newSympson, res);
 });
+
+app.post('/api/brain/recommend', function(req, res) {
+  var symptoms = req.body;
+  console.log("The brain shall now ponder: ", symptoms);
+  var data = brain.OCBrain.activate(symptoms);
+  console.log("The brain has decided to recommend: ", data);
+  res.send(data);
+});
+
+// app.post('api/brain/add', function(req, res) {
+
+// })
